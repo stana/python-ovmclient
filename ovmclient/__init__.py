@@ -71,6 +71,10 @@ class Client(object):
     def server_pools(self):
         return ServerPoolManager(self._conn)
 
+    @property
+    def resource_groups(self):
+        return ResourceGroupManager(self._conn)
+
     def server_repository_exports(self, server_id):
         return RepositoryExportManager(self._conn, server_id)
 
@@ -194,6 +198,23 @@ class ServerPoolManager(base.BaseManager):
     def remove_server(self, id, server_id):
         # server_id is in simpleId format
         return self._action(id, "removeServer", data=server_id)
+
+
+class ResourceGroupManager(base.BaseManager):
+    def __init__(self, conn):
+        super(ResourceGroupManager, self).__init__(conn, "ResourceGroup")
+
+    def get_resource_ids(self, id):
+        return self._conn.get("ResourceGroup/%s/resource/id" %
+            self._get_id_value(id))
+
+    def add_resource(self, id, resource_id):
+        # resource_id is in simpleId format
+        return self._action(id, "addResource", data=resource_id)
+
+    def remove_resource(self, id, resource_id):
+        # resource_id is in simpleId format
+        return self._action(id, "removeResource", data=resource_id)
 
 
 class VirtualDiskManager(base.BaseManager):
