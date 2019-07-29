@@ -75,6 +75,13 @@ class Client(object):
     def resource_groups(self):
         return ResourceGroupManager(self._conn)
 
+    @property
+    def affinity_groups(self):
+        return AffinityGroupManager(self._conn)
+
+    def server_pool_affinity_groups(self, server_pool_id):
+        return ServerPoolAffinityGroupManager(self._conn, server_pool_id)
+
     def server_repository_exports(self, server_id):
         return RepositoryExportManager(self._conn, server_id)
 
@@ -215,6 +222,44 @@ class ResourceGroupManager(base.BaseManager):
     def remove_resource(self, id, resource_id):
         # resource_id is in simpleId format
         return self._action(id, "removeResource", data=resource_id)
+
+
+class AffinityGroupManager(base.BaseManager):
+    def __init__(self, conn):
+        super(AffinityGroupManager, self).__init__(conn, 'AffinityGroup')
+
+    def add_vm(self, id, vm_id):
+        # vm_id is in simpleId format
+        return self._action(id, "addVm", data=vm_id)
+
+    def remove_vm(self, id, vm_id):
+        return self._action(id, "removeVm", data=vm_id)
+
+    def add_server(self, id, server_id):
+        return self._action(id, "addServer", data=server_id)
+
+    def remove_server(self, id, server_id):
+        return self._action(id, "removeServer", data=server_id)
+
+
+class ServerPoolAffinityGroupManager(base.BaseManager):
+    def __init__(self, conn, server_pool_id):
+        rel_path = "ServerPool/%s/AffinityGroup" % self._get_id_value(
+            server_pool_id)
+        super(ServerPoolAffinityGroupManager, self).__init__(conn, rel_path)
+
+    def get_by_name(self, name):
+        # 'ServerPool/%s/AffinityGroup' missing '.../id' end-point to only
+        # fetch id-s to search by name. Search by fetching full resource list.
+        aff_grps = [aff_grp for aff_grp in self.get_all()
+            if aff_grp['id'].get('name') == name]
+        if not aff_grps:
+            raise exception.ObjectNotFoundException(
+                "No object found with name: %s" % name)
+        if len(aff_grps) > 1:
+            raise exception.TooManyObjectsException(
+                "More than one object exists with name: %s" % name)
+        return aff_grps[0]
 
 
 class VirtualDiskManager(base.BaseManager):
