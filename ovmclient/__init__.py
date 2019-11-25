@@ -193,6 +193,13 @@ class ServerManager(base.BaseManager):
         }
         return self._conn.post("%s/discover" % self._rel_url, None, params)
 
+    def add_vm(self, id, vm_id):
+        # vm_id is in simpleId format
+        return self._action(id, "addVm", data=vm_id)
+
+    def remove_vm(self, id, vm_id):
+        return self._action(id, "removeVm", data=vm_id)
+
 
 class ServerPoolManager(base.BaseManager):
     def __init__(self, conn):
