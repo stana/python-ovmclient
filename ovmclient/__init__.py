@@ -352,6 +352,12 @@ class VmManager(base.BaseManager):
 
         return self._action(id, "clone", params=params)
 
+    def send_msg(self, id, data, log_flag=False):
+        params = {
+            "logFlag": log_flag,
+        }
+        return self._action(id, "sendMessage", data=data, params=params)
+
 
 class VmDiskMappingManager(base.BaseManager):
     def __init__(self, conn, vm_id=None):
